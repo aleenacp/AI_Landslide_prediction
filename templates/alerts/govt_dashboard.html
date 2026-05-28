@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Government Control Unit — LandslideAI</title>
+{% load humanize %}
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #21262d;
+    --text: #e6edf3; --muted: #8b949e; --accent: #3b82f6;
+    --green: #22c55e; --amber: #f59e0b; --red: #ef4444; --purple: #8b5cf6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text);
+         font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+  nav { display: flex; align-items: center; justify-content: space-between;
+        padding: 0 2rem; height: 56px; background: var(--surface);
+        border-bottom: 1px solid var(--border); }
+  .nav-title { font-weight: 700; font-size: 1.1rem; }
+  .nav-user { font-size: 13px; color: var(--muted); }
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr);
+                gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border);
+               border-radius: 10px; padding: 1.2rem; }
+  .stat-label { font-size: 12px; color: var(--muted); margin-bottom: .5rem; }
+  .stat-value { font-size: 2rem; font-weight: 700; font-family: monospace; }
+  .card { background: var(--surface); border: 1px solid var(--border);
+          border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .card-title { font-size: 13px; font-weight: 600; text-transform: uppercase;
+                letter-spacing: .06em; color: var(--muted); margin-bottom: 1rem; }
+  .alert-row { display: flex; align-items: flex-start; gap: 1rem;
+               padding: 1rem 0; border-bottom: 1px solid var(--border); }
+  .alert-row:last-child { border-bottom: none; }
+  .alert-severity { padding: 3px 10px; border-radius: 20px; font-size: 12px;
+                    font-weight: 600; text-transform: uppercase; flex-shrink: 0; }
+  .sev-watch    { background: rgba(245,158,11,.15); color: var(--amber); }
+  .sev-warning  { background: rgba(239,68,68,.15);  color: var(--red); }
+  .sev-evacuate { background: rgba(139,92,246,.15); color: var(--purple); }
+  .sev-all_clear{ background: rgba(34,197,94,.15);  color: var(--green); }
+  .alert-info { flex: 1; }
+  .alert-location { font-weight: 600; font-size: 15px; margin-bottom: .3rem; }
+  .alert-meta { font-size: 12px; color: var(--muted); margin-bottom: .5rem; }
+  .alert-message { font-size: 13px; background: var(--bg); padding: .75rem;
+                   border-radius: 6px; border: 1px solid var(--border);
+                   white-space: pre-wrap; line-height: 1.6; }
+  .action-form { display: flex; gap: .5rem; align-items: flex-end;
+                 flex-wrap: wrap; margin-top: .75rem; }
+  .action-form textarea { background: var(--bg); border: 1px solid var(--border);
+                          color: var(--text); padding: .5rem .75rem; border-radius: 6px;
+                          font-size: 13px; resize: none; height: 60px; flex: 1;
+                          min-width: 200px; font-family: inherit; }
+  .btn { padding: .5rem 1.2rem; border-radius: 6px; font-size: 13px;
+         font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+  .btn-approve { background: var(--green); color: #fff; }
+  .btn-reject  { background: transparent; color: var(--red);
+                 border: 1px solid var(--red); }
+  .btn-approve:hover { background: #16a34a; }
+  .btn-reject:hover  { background: rgba(239,68,68,.1); }
+  .status-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px;
+                  font-weight: 600; }
+  .st-approved { background: rgba(34,197,94,.1);  color: var(--green); }
+  .st-rejected { background: rgba(239,68,68,.1);  color: var(--red); }
+  .empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 14px; }
+  .logout { color: var(--muted); font-size: 13px; text-decoration: none; }
+  .logout:hover { color: var(--text); }
+  .tabs { display: flex; gap: 4px; background: var(--bg); padding: 4px;
+          border-radius: 8px; border: 1px solid var(--border);
+          margin-bottom: 1.5rem; }
+  .tab { flex: 1; padding: .6rem; text-align: center; border-radius: 6px;
+         font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); }
+  .tab.active { background: var(--surface); color: var(--text);
+                border: 1px solid var(--border); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .prob-pill { font-family: monospace; font-size: 12px; padding: 2px 8px;
+               border-radius: 10px; background: var(--border); }
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-title">🏛️ Government Control Unit — LandslideAI</div>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <span class="nav-user">{{ request.user.get_full_name|default:request.user.username }}</span>
+    <a href="{% url 'logout' %}?next=/" class="logout">Logout</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Pending Approval</div>
+      <div class="stat-value" style="color:var(--amber)">{{ pending_alerts.count }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Alerts Approved</div>
+      <div class="stat-value" style="color:var(--green)">{{ approved_alerts.count }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Shelters</div>
+      <div class="stat-value" style="color:var(--accent)">{{ total_shelters }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Open Shelters</div>
+      <div class="stat-value" style="color:var(--green)">{{ open_shelters }}</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('pending',this)">
+      ⏳ Pending ({{ pending_alerts.count }})
+    </div>
+    <div class="tab" onclick="showTab('approved',this)">
+      ✅ Approved
+    </div>
+    <div class="tab" onclick="showTab('rejected',this)">
+      ❌ Rejected
+    </div>
+  </div>
+
+  <!-- PENDING ALERTS -->
+  <div id="tab-pending" class="tab-panel active">
+    <div class="card">
+      <div class="card-title">⚠️ Alerts Awaiting Your Approval</div>
+      {% if pending_alerts %}
+        {% for alert in pending_alerts %}
+        <div class="alert-row">
+          <span class="alert-severity sev-{{ alert.severity }}">{{ alert.severity }}</span>
+          <div class="alert-info">
+            <div class="alert-location">
+              {{ alert.affected_district|default:"Location pending" }}
+              <span class="prob-pill">{{ alert.analysis.landslide_probability|floatformat:1 }}% risk</span>
+            </div>
+            <div class="alert-meta">
+              Triggered: {{ alert.created_at|naturaltime }} ·
+              Analysis #{{ alert.analysis.id }} ·
+              Risk: {{ alert.analysis.risk_level|upper }}
+            </div>
+            <div class="alert-message">{{ alert.message_english }}</div>
+            <form method="POST" action="{% url 'approve-alert' alert.id %}" style="display:inline">
+              {% csrf_token %}
+              <div class="action-form">
+                <textarea name="notes" placeholder="Add notes (optional)..."></textarea>
+                <button type="submit" class="btn btn-approve">✅ Approve & Send</button>
+              </div>
+            </form>
+            <form method="POST" action="{% url 'reject-alert' alert.id %}"
+                  style="display:inline;margin-left:.5rem"
+                  onsubmit="return confirm('Reject this alert?')">
+              {% csrf_token %}
+              <input type="hidden" name="notes" value="Rejected by officer"/>
+              <button type="submit" class="btn btn-reject">❌ Reject</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty">🎉 No pending alerts — all clear!</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- APPROVED ALERTS -->
+  <div id="tab-approved" class="tab-panel">
+    <div class="card">
+      <div class="card-title">✅ Recently Approved & Sent</div>
+      {% for alert in approved_alerts %}
+      <div class="alert-row">
+        <span class="alert-severity sev-{{ alert.severity }}">{{ alert.severity }}</span>
+        <div class="alert-info">
+          <div class="alert-location">{{ alert.affected_district|default:"—" }}</div>
+          <div class="alert-meta">
+            Sent: {{ alert.sent_at|naturaltime }} ·
+            SMS: {{ alert.sms_sent_count }} · Email: {{ alert.email_sent_count }}
+          </div>
+        </div>
+        <span class="status-badge st-approved">Sent</span>
+      </div>
+      {% empty %}
+        <div class="empty">No approved alerts yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- REJECTED ALERTS -->
+  <div id="tab-rejected" class="tab-panel">
+    <div class="card">
+      <div class="card-title">❌ Rejected Alerts</div>
+      {% for alert in rejected_alerts %}
+      <div class="alert-row">
+        <span class="alert-severity sev-{{ alert.severity }}">{{ alert.severity }}</span>
+        <div class="alert-info">
+          <div class="alert-location">{{ alert.affected_district|default:"—" }}</div>
+          <div class="alert-meta">{{ alert.created_at|naturaltime }}</div>
+        </div>
+        <span class="status-badge st-rejected">Rejected</span>
+      </div>
+      {% empty %}
+        <div class="empty">No rejected alerts.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(name, el) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>

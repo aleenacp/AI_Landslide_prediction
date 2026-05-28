@@ -181,9 +181,15 @@
     <span class="nav-badge">v1.0</span>
   </div>
   <div class="nav-links">
+    <!-- Add inside <div class="nav-links"> -->
+    <div class="nav-link" onclick="showPage('alerts')">🚨 Alerts</div>
+    <a href="/api/govt/" class="nav-link" style="text-decoration:none">🏛️ Govt</a>
     <div class="nav-link active" onclick="showPage('analyze')">Analyze</div>
     <div class="nav-link" onclick="showPage('history')">History</div>
     <div class="nav-link" onclick="showPage('dashboard')">Dashboard</div>
+    <!-- Add inside <div class="nav-links"> -->
+  <div class="nav-link" onclick="showPage('alerts')">🚨 Alerts</div>
+    <a href="/api/govt/" class="nav-link" style="text-decoration:none">🏛️ Govt</a>
   </div>
 </nav>
 
@@ -301,7 +307,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             Run Detection
           </div>
-
+          
           <button class="btn btn-primary btn-full" id="submit-btn" onclick="submitAnalysis()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             Analyze for Landslide
@@ -458,8 +464,12 @@ function showPage(page) {
   document.querySelector(`.nav-link[onclick="showPage('${page}')"]`).classList.add('active');
   if (page === 'history')   loadHistory();
   if (page === 'dashboard') loadDashboard();
+  if (page === 'alerts')    loadAlertsPage();
 }
-
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : '';
+}
 // ─── Map init ─────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
   map = L.map('map', { zoomControl: true }).setView([20, 78], 4);
@@ -568,7 +578,11 @@ async function submitAnalysis() {
   });
 
   try {
-    const resp = await fetch('/api/analyze/', { method: 'POST', body: fd });
+    const resp = await fetch('/api/analyze/', {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+      });
     const data = await resp.json();
 
     if (!resp.ok) throw new Error(data.error || 'Analysis failed');
@@ -813,6 +827,127 @@ async function fetchSatelliteForLocation(lat, lon) {
         showToast('Could not fetch satellite image: ' + err.message, 'error');
     }
 }
+// ─── Alert Map ────────────────────────────────────────────────────────────
+let alertMap = null;
+
+function initAlertMap() {
+  if (alertMap) return;
+  alertMap = L.map('alert-map').setView([10.85, 76.27], 7);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '©CARTO', maxZoom: 18
+  }).addTo(alertMap);
+}
+
+async function loadAlertsPage() {
+  initAlertMap();
+  const riskColors = {
+    low:'#22c55e', moderate:'#f59e0b', high:'#ef4444', critical:'#8b5cf6'
+  };
+
+  // Area warning points
+  try {
+    const geoResp = await fetch('/api/alerts/area-map/');
+    const geo     = await geoResp.json();
+    geo.features.forEach(f => {
+      const p = f.properties;
+      const c = riskColors[p.risk_level] || '#6b7280';
+      L.circleMarker(
+        [f.geometry.coordinates[1], f.geometry.coordinates[0]],
+        { radius: 12, fillColor: c, color: '#fff', weight: 2, fillOpacity: 0.85 }
+      ).bindPopup(`<b>${p.location||'Unknown'}</b><br>
+                   <span style="color:${c}">${(p.risk_level||'').toUpperCase()}</span><br>
+                   ${p.probability ? (p.probability*100).toFixed(1)+'%' : ''}<br>
+                   ${p.date}`
+      ).addTo(alertMap);
+    });
+  } catch(e) { console.error(e); }
+
+  // Active public alerts
+  try {
+    const alerts = await (await fetch('/api/alerts/')).json();
+    const sevColors = {
+      watch:'#f59e0b', warning:'#ef4444', evacuate:'#8b5cf6', all_clear:'#22c55e'
+    };
+    document.getElementById('active-alerts-list').innerHTML = alerts.length
+      ? alerts.map(a => `
+          <div style="border-left:3px solid ${sevColors[a.severity]||'#6b7280'};
+                      padding:.75rem 1rem;margin-bottom:.75rem;
+                      background:var(--bg);border-radius:0 6px 6px 0">
+            <div style="font-weight:600;font-size:13px;margin-bottom:.3rem">
+              ${a.severity.toUpperCase()} — ${a.affected_district||'Unknown'}
+            </div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.6">
+              ${a.message_english.slice(0,180)}...
+            </div>
+          </div>`).join('')
+      : '<div style="color:var(--green);text-align:center;padding:1.5rem">✅ No active alerts</div>';
+  } catch(e) {}
+
+  // Emergency contacts
+  try {
+    const contacts = await (await fetch('/api/emergency-contacts/')).json();
+    const catColors = {
+      ndrf:'#3b82f6', police:'#f59e0b', fire:'#ef4444',
+      medical:'#22c55e', government:'#8b5cf6', helpline:'#06b6d4', other:'#6b7280'
+    };
+    document.getElementById('emergency-contacts-list').innerHTML =
+      contacts.map(c => `
+        <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem 0;
+                    border-bottom:1px solid var(--border)">
+          <div style="width:36px;height:36px;border-radius:50%;
+                      background:rgba(59,130,246,.1);display:flex;align-items:center;
+                      justify-content:center;font-size:16px;flex-shrink:0">
+            ${{ndrf:'🚁',police:'👮',fire:'🚒',medical:'🏥',government:'🏛️',helpline:'📞',other:'📋'}[c.category]||'📞'}
+          </div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600">${c.name}</div>
+            <div style="font-size:11px;color:var(--muted)">${c.category.toUpperCase()}</div>
+          </div>
+          <a href="tel:${c.phone}" style="color:#22c55e;font-family:monospace;
+                                         font-size:14px;font-weight:700;text-decoration:none">
+            ${c.phone}
+          </a>
+        </div>`).join('');
+  } catch(e) {}
+
+  // Shelters
+  try {
+    const shelters = await (await fetch('/api/shelters/')).json();
+    document.getElementById('shelters-list').innerHTML = shelters.length
+      ? shelters.map(s => `
+          <div class="card" style="padding:1rem">
+            <div style="font-weight:600;font-size:14px;margin-bottom:.3rem">${s.name}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:.5rem">${s.district}</div>
+            ${s.has_food    ? '<span style="background:rgba(34,197,94,.1);color:#22c55e;font-size:11px;padding:2px 6px;border-radius:4px;margin-right:4px">🍚 Food</span>'    : ''}
+            ${s.has_medical ? '<span style="background:rgba(59,130,246,.1);color:#3b82f6;font-size:11px;padding:2px 6px;border-radius:4px">🏥 Medical</span>' : ''}
+            <div style="font-size:13px;margin-top:.5rem">
+              <b style="color:#22c55e">${s.available_capacity}</b> spots free
+            </div>
+            <div style="height:4px;background:var(--border);border-radius:2px;margin:.4rem 0">
+              <div style="height:100%;width:${s.occupancy_percent}%;border-radius:2px;
+                          background:${s.occupancy_percent>80?'#ef4444':'#22c55e'}"></div>
+            </div>
+            ${s.contact_phone ? `<div style="font-size:12px;color:var(--muted)">📞 ${s.contact_phone}</div>` : ''}
+          </div>`).join('')
+      : '<div style="color:var(--muted);grid-column:1/-1;text-align:center;padding:2rem">No open shelters right now</div>';
+  } catch(e) {}
+
+  // Safety instructions
+  try {
+    const safety = await (await fetch('/api/safety-instructions/?severity=high')).json();
+    document.getElementById('safety-instructions-list').innerHTML =
+      safety.map(i => `
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;
+                    padding:1rem;margin-bottom:.75rem">
+          <div style="font-weight:600;margin-bottom:.3rem">${i.icon} ${i.title_en}</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7">${i.body_en}</div>
+        </div>`).join('');
+  } catch(e) {}
+}
+
+// Update showPage function — add alerts case
+// Find your existing showPage function and update it:
+
 </script>
 </body>
 </html>

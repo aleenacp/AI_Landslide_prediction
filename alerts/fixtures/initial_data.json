@@ -1,0 +1,247 @@
+[
+  {
+    "model": "alerts.emergencycontact",
+    "pk": 1,
+    "fields": {
+      "name": "Kerala SDMA Control Room",
+      "category": "government",
+      "phone": "0471-2364424",
+      "alt_phone": "1077",
+      "email": "sdma@kerala.gov.in",
+      "district": "",
+      "address": "Kerala State Disaster Management Authority, Thiruvananthapuram",
+      "is_active": true,
+      "order": 1
+    }
+  },
+  {
+    "model": "alerts.emergencycontact",
+    "pk": 2,
+    "fields": {
+      "name": "National Disaster Response Force",
+      "category": "ndrf",
+      "phone": "011-24363260",
+      "alt_phone": "9868451616",
+      "email": "",
+      "district": "",
+      "address": "NDRF — India",
+      "is_active": true,
+      "order": 2
+    }
+  },
+  {
+    "model": "alerts.emergencycontact",
+    "pk": 3,
+    "fields": {
+      "name": "Emergency Helpline",
+      "category": "helpline",
+      "phone": "112",
+      "alt_phone": "1077",
+      "email": "",
+      "district": "",
+      "address": "",
+      "is_active": true,
+      "order": 0
+    }
+  },
+  {
+    "model": "alerts.emergencycontact",
+    "pk": 4,
+    "fields": {
+      "name": "Kerala Fire & Rescue",
+      "category": "fire",
+      "phone": "101",
+      "alt_phone": "0471-2721230",
+      "email": "",
+      "district": "",
+      "address": "Kerala Fire & Rescue Services",
+      "is_active": true,
+      "order": 3
+    }
+  },
+  {
+    "model": "alerts.emergencycontact",
+    "pk": 5,
+    "fields": {
+      "name": "Police Control Room",
+      "category": "police",
+      "phone": "100",
+      "alt_phone": "0471-2721547",
+      "email": "",
+      "district": "",
+      "address": "Kerala Police",
+      "is_active": true,
+      "order": 4
+    }
+  },
+  {
+    "model": "alerts.emergencycontact",
+    "pk": 6,
+    "fields": {
+      "name": "Ambulance",
+      "category": "medical",
+      "phone": "108",
+      "alt_phone": "1056",
+      "email": "",
+      "district": "",
+      "address": "Kerala Emergency Medical Services",
+      "is_active": true,
+      "order": 5
+    }
+  },
+  {
+    "model": "alerts.safetyinstruction",
+    "pk": 1,
+    "fields": {
+      "severity": "all",
+      "category": "before",
+      "title_en": "Move away from slopes immediately",
+      "title_ml": "ചരിവുകളിൽ നിന്ന് ഉടനടി അകലുക",
+      "body_en": "If you hear rumbling sounds or see cracks forming on hillsides, leave the area immediately and move to higher flat ground away from the slope.",
+      "body_ml": "കുന്നിൻ ചരിവിൽ വിള്ളലുകൾ കണ്ടാൽ ഉടനടി മാറി ഉയർന്ന സ്ഥലത്തേക്ക് പോകുക.",
+      "icon": "🏃",
+      "order": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "alerts.safetyinstruction",
+    "pk": 2,
+    "fields": {
+      "severity": "all",
+      "category": "during",
+      "title_en": "Do not cross rivers or streams",
+      "title_ml": "നദികൾ അല്ലെങ്കിൽ തോടുകൾ കടക്കരുത്",
+      "body_en": "During a landslide event rivers can flood rapidly with debris. Stay away from all water bodies and seek high ground immediately.",
+      "body_ml": "ഉരുൾ സമയത്ത് നദികൾ കടക്കരുത്. ഉയർന്ന ഭൂമിയിലേക്ക് പോകുക.",
+      "icon": "🌊",
+      "order": 2,
+      "is_active": true
+    }
+  },
+  {
+    "model": "alerts.safetyinstruction",
+    "pk": 3,
+    "fields": {
+      "severity": "high",
+      "category": "general",
+      "title_en": "Go to nearest designated shelter",
+      "title_ml": "അടുത്ത ആശ്രയ കേന്ദ്രത്തിലേക്ക് പോകുക",
+      "body_en": "Proceed immediately to the nearest government-designated relief shelter. Take essential documents, medicines, and warm clothing with you.",
+      "body_ml": "ആവശ്യമായ രേഖകളും മരുന്നുകളും കൊണ്ട് ഉടൻ ആശ്രയ കേന്ദ്രത്തിലേക്ക് പോകുക.",
+      "icon": "🏠",
+      "order": 3,
+      "is_active": true
+    }
+  },
+  {
+    "model": "alerts.safetyinstruction",
+    "pk": 4,
+    "fields": {
+      "severity": "all",
+      "category": "after",
+      "title_en": "Do not return until authorities confirm it is safe",
+      "title_ml": "അധികൃതർ സുരക്ഷിതമെന്ന് സ്ഥിരീകരിക്കുന്നതുവരെ മടങ്ങരുത്",
+      "body_en": "After a landslide do not return to your home until local authorities have confirmed the area is safe. Secondary slides are common.",
+      "body_ml": "ഉരുൾ ശേഷം അധികൃതരുടെ അനുമതി കിട്ടും വരെ തിരിച്ചു പോകരുത്.",
+      "icon": "⛔",
+      "order": 4,
+      "is_active": true
+    }
+  },
+  {
+    "model": "alerts.safetyinstruction",
+    "pk": 5,
+    "fields": {
+      "severity": "all",
+      "category": "general",
+      "title_en": "Keep emergency kit ready",
+      "title_ml": "അടിയന്തര കിറ്റ് തയ്യാറാക്കുക",
+      "body_en": "Keep a bag ready with: ID documents, medicines, torch, water, dry food, warm clothes, and a phone charger. Be ready to leave in under 5 minutes.",
+      "body_ml": "ID രേഖകൾ, മരുന്ന്, ടോർച്ച്, വെള്ളം, ഭക്ഷണം, ചൂടുള്ള വസ്ത്രങ്ങൾ എന്നിവ ബാഗിൽ തയ്യാറാക്കുക.",
+      "icon": "🎒",
+      "order": 5,
+      "is_active": true
+    }
+  },
+  {
+    "model": "alerts.shelter",
+    "pk": 1,
+    "fields": {
+      "name": "Government LP School Wayanad",
+      "address": "Kalpetta, Wayanad, Kerala 673121",
+      "district": "Wayanad",
+      "latitude": 11.6070,
+      "longitude": 76.0830,
+      "capacity": 200,
+      "current_occupancy": 0,
+      "is_open": false,
+      "has_food": true,
+      "has_medical": true,
+      "contact_name": "Panchayat Officer",
+      "contact_phone": "+914936202300",
+      "notes": "Ground floor accessible. Generator available.",
+      "last_updated": "2026-05-27 12:00:00"
+    }
+  },
+  {
+    "model": "alerts.shelter",
+    "pk": 2,
+    "fields": {
+      "name": "Community Hall Idukki",
+      "address": "Thodupuzha, Idukki, Kerala 685584",
+      "district": "Idukki",
+      "latitude": 9.8977,
+      "longitude": 76.7180,
+      "capacity": 150,
+      "current_occupancy": 0,
+      "is_open": false,
+      "has_food": true,
+      "has_medical": false,
+      "contact_name": "Ward Member",
+      "contact_phone": "+914862222100",
+      "notes": "",
+      "last_updated": "2026-05-27 12:00:00"
+    }
+  },
+  {
+    "model": "alerts.shelter",
+    "pk": 3,
+    "fields": {
+      "name": "UP School Kozhikode",
+      "address": "Kozhikode, Kerala 673001",
+      "district": "Kozhikode",
+      "latitude": 11.2588,
+      "longitude": 75.7804,
+      "capacity": 180,
+      "current_occupancy": 0,
+      "is_open": false,
+      "has_food": true,
+      "has_medical": true,
+      "contact_name": "School Headmaster",
+      "contact_phone": "+914952722100",
+      "notes": "Near main bus stand.",
+      "last_updated": "2026-05-27 12:00:00"
+    }
+  },
+  {
+    "model": "alerts.shelter",
+    "pk": 4,
+    "fields": {
+      "name": "Panchayat Hall Malappuram",
+      "address": "Malappuram, Kerala 676505",
+      "district": "Malappuram",
+      "latitude": 11.0510,
+      "longitude": 76.0711,
+      "capacity": 120,
+      "current_occupancy": 0,
+      "is_open": false,
+      "has_food": false,
+      "has_medical": false,
+      "contact_name": "Panchayat President",
+      "contact_phone": "+914832762100",
+      "notes": "",
+      "last_updated": "2026-05-27 12:00:00"
+    }
+  }
+]
